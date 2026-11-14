@@ -1,0 +1,12 @@
+# Réservations existantes, importées via le service : elles subissent les mêmes contrôles qu'une saisie.
+client;chambre;arrivee;depart;personnes
+C001;301;2027-04-16;2027-04-19;2
+C002;201;2027-07-10;2027-07-17;4
+C003;101;2027-05-03;2027-05-05;2
+C004;102;2027-05-03;2027-05-10;1
+C005;302;2027-08-01;2027-08-08;3
+C006;104;2027-12-20;2027-12-27;2
+C001;202;2027-07-24;2027-08-02;5
+# Ligne volontairement en conflit avec la réservation de C003 (chambre 101 du 3 au 5 mai) :
+# elle est rejetée au chargement et signalée dans le rapport de démarrage.
+C004;101;2027-05-04;2027-05-06;2

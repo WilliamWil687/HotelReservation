@@ -1,0 +1,7 @@
+id;nom;email;statut
+C001;Camille Laurent;camille.laurent@exemple.fr;OR
+C002;Hugo Bernard;hugo.bernard@exemple.fr;ARGENT
+C003;Léa Moreau;lea.moreau@exemple.fr;STANDARD
+C004;Nathan Petit;nathan.petit@exemple.fr;STANDARD
+C005;Chloé Dubois;chloe.dubois@exemple.fr;ARGENT
+C006;Lucas Roux;lucas.roux@exemple.fr;OR

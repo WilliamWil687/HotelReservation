@@ -1,0 +1,11 @@
+# Chambres de l'hôtel Les Tilleuls
+# option : supplément par personne au-delà de 2 (FAMILIALE) ou taux de majoration week-end (SUITE)
+type;numero;etage;capacite;prix_base;option
+STANDARD;101;1;2;85.00;
+STANDARD;102;1;2;85.00;
+STANDARD;103;1;1;65.00;
+STANDARD;104;1;2;90.00;
+FAMILIALE;201;2;4;120.00;20.00
+FAMILIALE;202;2;5;135.00;25.00
+SUITE;301;3;2;240.00;0.25
+SUITE;302;3;4;310.00;0.30
