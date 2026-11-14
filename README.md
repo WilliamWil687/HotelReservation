@@ -1,198 +1,200 @@
-# Hôtel Les Tilleuls - Gestion des réservations
+# Hôtel Les Tilleuls - Reservation Management
 
-Application console Java de gestion des réservations d'un hôtel : recherche de disponibilités, devis avec tarification saisonnière et remises, réservation, annulation avec frais, statistiques de gestion.
+Java console application for managing the reservations of a hotel: availability search, quotes with seasonal pricing and discounts, booking, cancellation with fees, and management statistics.
 
-## 1. But de l'application
+> The source code (class, method and variable names, comments and console messages) is written in French. This README explains each class in English.
 
-Un hôtel propose plusieurs types de chambres (standard, familiale, suite) dont les prix varient selon la saison, le jour de la semaine et le nombre d'occupants. L'application permet au personnel de la réception de :
+## 1. Purpose of the application
 
-- trouver une chambre libre adaptée à un groupe pour des dates données ;
-- établir un devis détaillé en appliquant automatiquement les remises auxquelles le client a droit ;
-- enregistrer une réservation en garantissant qu'aucune chambre n'est réservée deux fois ;
-- annuler une réservation en calculant les frais selon la politique propre à chaque type de chambre ;
-- suivre l'activité (taux d'occupation, chiffre d'affaires, meilleurs clients).
+A hotel offers several room types (standard, family, suite) whose prices vary with the season, the day of the week and the number of guests. The application lets the front-desk staff:
 
-## 2. Lancer l'application
+- find a free room suited to a group for given dates;
+- produce a detailed quote, automatically applying the discounts the guest is entitled to;
+- record a reservation while guaranteeing that no room is ever booked twice;
+- cancel a reservation, computing the fees according to the policy of each room type;
+- monitor activity (occupancy rate, revenue, best guests).
 
-**Prérequis :** JDK 21 ou plus récent, Maven (celui intégré à IntelliJ suffit).
+## 2. Running the application
 
-**Depuis IntelliJ IDEA**
+**Requirements:** JDK 21 or newer, Maven (the one bundled with IntelliJ is enough).
 
-1. `File > Open` puis sélectionner le dossier du projet (IntelliJ détecte le `pom.xml`).
-2. Ouvrir `src/main/java/com/junia/hotel/Application.java` et cliquer sur ▶ à côté de `main`.
+**From IntelliJ IDEA**
 
-**En ligne de commande**
+1. `File > Open`, then select the project folder (IntelliJ detects the `pom.xml`).
+2. Open `src/main/java/com/junia/hotel/Application.java` and click ▶ next to `main`.
+
+**From the command line**
 
 ```bash
 mvn compile exec:java
 ```
 
-ou, pour produire un JAR exécutable :
+or, to build an executable JAR:
 
 ```bash
 mvn package
 java -jar target/hotel-reservation-1.0.jar
 ```
 
-Par défaut, les données sont lues dans `src/main/resources/data/`. Pour utiliser un autre jeu de données, passer en argument un dossier contenant `chambres.csv`, `clients.csv` et `reservations.csv` :
+By default, data is read from `src/main/resources/data/`. To use another data set, pass as an argument a folder containing `chambres.csv`, `clients.csv` and `reservations.csv`:
 
 ```bash
-java -jar target/hotel-reservation-1.0.jar chemin/vers/mes-donnees
+java -jar target/hotel-reservation-1.0.jar path/to/my-data
 ```
 
-## 3. Fonctionnalités
+## 3. Features
 
-| Menu | Fonctionnalité | Règles métier |
+| Menu | Feature | Business rules |
 |---|---|---|
-| 1, 2 | Afficher les chambres et les clients | - |
-| 3 | Rechercher les chambres disponibles | Capacité suffisante, aucune réservation active qui chevauche la période, tri par prix croissant |
-| 4 | Demander un devis | Prix à la nuit propre au type de chambre, coefficient saisonnier, remises cumulées puis plafonnées |
-| 5 | Réserver une chambre | Client et chambre existants, capacité respectée, pas de date passée, pas de chevauchement |
-| 6 | Annuler une réservation | Gratuite si le délai de la chambre est respecté, 50 % de frais sinon, impossible une fois le séjour commencé |
-| 7 | Consulter les réservations d'un client | Triées par date d'arrivée |
-| 8 | Statistiques | Taux d'occupation sur une période, chiffre d'affaires encaissé par type de chambre, top 3 des clients |
+| 1, 2 | List rooms and guests | - |
+| 3 | Search available rooms | Sufficient capacity, no active reservation overlapping the period, sorted by ascending price |
+| 4 | Request a quote | Nightly price specific to the room type, seasonal coefficient, discounts combined then capped |
+| 5 | Book a room | Existing guest and room, capacity respected, no past date, no overlap |
+| 6 | Cancel a reservation | Free if the room's notice period is respected, 50 % fee otherwise, impossible once the stay has started |
+| 7 | View a guest's reservations | Sorted by arrival date |
+| 8 | Statistics | Occupancy rate over a period, revenue collected per room type, top 3 guests |
 
-**Règles tarifaires**
+**Pricing rules**
 
-- **Chambre standard :** prix fixe, annulation gratuite jusqu'à 2 jours avant l'arrivée.
-- **Chambre familiale :** prix de base pour 2 personnes + supplément par personne en plus, annulation gratuite jusqu'à 3 jours avant.
-- **Suite :** majoration les nuits du vendredi et du samedi, annulation gratuite jusqu'à 7 jours avant.
-- **Saisons :** basse (janvier, février, novembre) x0,85 ; moyenne x1,00 ; haute (juillet, août, décembre) x1,30. Chaque nuit est tarifée selon sa propre saison, ce qui gère correctement un séjour à cheval sur deux saisons.
-- **Remises :** long séjour (7 nuits et plus, -10 %), fidélité (Argent -5 %, Or -10 %), réservation anticipée (60 jours et plus avant l'arrivée, -8 %). Elles se cumulent dans la limite de 25 % du prix.
-- Le jour de départ d'un client peut être le jour d'arrivée du suivant.
+- **Standard room:** fixed price, free cancellation up to 2 days before arrival.
+- **Family room:** base price for 2 people + a supplement for each additional person, free cancellation up to 3 days before arrival.
+- **Suite:** surcharge on Friday and Saturday nights, free cancellation up to 7 days before arrival.
+- **Seasons:** low (January, February, November) x0.85; mid x1.00; high (July, August, December) x1.30. Each night is priced according to its own season, so a stay spanning two seasons is handled correctly.
+- **Discounts:** long stay (7 nights or more, -10 %), loyalty (Silver -5 %, Gold -10 %), early booking (60 days or more before arrival, -8 %). They can be combined up to a maximum of 25 % of the price.
+- A guest's departure day can be the next guest's arrival day.
 
-## 4. Architecture et classes principales
+## 4. Architecture and main classes
 
 ```
 src/main/java/com/junia/hotel/
-├── Application.java              point d'entrée : assemble les dépendances et lance le menu
-├── model/                        entités et objets valeur du domaine
-├── service/                      logique métier
-│   └── remise/                   règles de remise (stratégies)
-├── repository/                   stockage des entités
-├── chargement/                   lecture des fichiers CSV et import
-├── exception/                    exceptions personnalisées
-├── ui/                           interface console
-└── util/                         validation, arrondis, mise en forme
-src/main/resources/data/          fichiers de données chargés au démarrage
-src/test/java/com/junia/hotel/    tests unitaires JUnit 5
+├── Application.java              entry point: wires the dependencies and starts the menu
+├── model/                        domain entities and value objects
+├── service/                      business logic
+│   └── remise/                   discount rules (strategies)
+├── repository/                   entity storage
+├── chargement/                   CSV file reading and import
+├── exception/                    custom exceptions
+├── ui/                           console interface
+└── util/                         validation, rounding, formatting
+src/main/resources/data/          data files loaded at startup
+src/test/java/com/junia/hotel/    JUnit 5 unit tests
 ```
 
-| Classe | Rôle |
+| Class | Responsibility |
 |---|---|
-| `Chambre` (abstraite) | État commun d'une chambre, déclare la tarification et la politique d'annulation |
-| `ChambreStandard`, `ChambreFamiliale`, `Suite` | Implémentent chacune leur propre prix à la nuit et leur délai d'annulation |
-| `Client`, `StatutFidelite` | Client de l'hôtel et niveau de fidélité qui détermine sa remise |
-| `Periode` (record) | Séjour toujours valide ; calcule nuits, chevauchement et intersection |
-| `Reservation` | Réservation et son cycle de vie (confirmée puis éventuellement annulée avec frais) |
-| `Saison` (enum) | Coefficient tarifaire selon le mois |
-| `Devis`, `LigneRemise`, `ResultatAnnulation` | Résultats immuables des opérations métier |
-| `CalculateurTarif` | Calcule le prix d'un séjour : nuits, saisons, remises, plafond |
-| `Remise` (interface) + 3 implémentations | Règles de remise interchangeables |
-| `ReservationService` | Devis, réservation, annulation et toutes leurs vérifications |
-| `DisponibiliteService` | Disponibilité d'une chambre et recherche de chambres libres |
-| `StatistiquesService` | Taux d'occupation, chiffre d'affaires, classement des clients |
-| `Repository<T, ID>` / `RepositoryMemoire` | Stockage générique ; `ReservationRepository` ajoute les requêtes propres aux réservations |
-| `ChargeurCsv`, `LigneCsv`, `ParseurLigne<T>` | Lecture générique d'un CSV et conversion typée des colonnes |
-| `ImportateurDonnees` | Charge les trois fichiers dans l'ordre et produit un rapport d'import |
-| `MenuPrincipal`, `SaisieConsole` | Menu console et saisies validées |
+| `Chambre` (abstract) | Room: common state, declares the pricing and the cancellation policy |
+| `ChambreStandard`, `ChambreFamiliale`, `Suite` | Standard room, family room, suite: each implements its own nightly price and cancellation notice period |
+| `Client`, `StatutFidelite` | Hotel guest and loyalty level, which determines the guest's discount |
+| `Periode` (record) | Stay period, always valid; computes nights, overlap and intersection |
+| `Reservation` | Reservation and its life cycle (confirmed, then possibly cancelled with fees) |
+| `Saison` (enum) | Season: pricing coefficient based on the month |
+| `Devis`, `LigneRemise`, `ResultatAnnulation` | Immutable results of business operations: quote, discount line, cancellation result |
+| `CalculateurTarif` | Price calculator for a stay: nights, seasons, discounts, cap |
+| `Remise` (interface) + 3 implementations | Interchangeable discount rules |
+| `ReservationService` | Quotes, bookings, cancellations and all their checks |
+| `DisponibiliteService` | Availability of a room and search for free rooms |
+| `StatistiquesService` | Occupancy rate, revenue, guest ranking |
+| `Repository<T, ID>` / `RepositoryMemoire` | Generic in-memory storage; `ReservationRepository` adds reservation-specific queries |
+| `ChargeurCsv`, `LigneCsv`, `ParseurLigne<T>` | Generic CSV reading and typed conversion of columns |
+| `ImportateurDonnees` | Data importer: loads the three files in order and produces an import report |
+| `MenuPrincipal`, `SaisieConsole` | Console menu and validated user input |
 
-## 5. Décisions techniques
+## 5. Technical decisions
 
-1. **`BigDecimal` pour tous les montants.** Un `double` ne représente pas exactement 0,10 : les remises et les arrondis produiraient des centimes faux. Les montants sont arrondis au centime en un seul endroit (`Montants`), avec la même règle partout.
-2. **Exceptions métier non vérifiées, exception de format vérifiée.** Une règle métier violée (chambre déjà prise, capacité dépassée...) ne peut pas être corrigée par l'appelant direct : elle remonte jusqu'au menu ou à l'import, qui l'interceptent toutes via la classe mère `HotelException`. À l'inverse, `FormatDonneesException` est vérifiée : le compilateur oblige le chargeur à la traiter pour écarter la ligne fautive et continuer.
-3. **Horloge injectée (`java.time.Clock`).** « Réserver dans le passé », « annuler moins de 7 jours avant » ou « réserver 60 jours à l'avance » dépendent de la date du jour. En injectant l'horloge, les tests s'exécutent à une date fixe et restent reproductibles.
-4. **Remises en patron Stratégie avec plafond global.** Chaque remise est une classe indépendante qui renvoie un `Optional<LigneRemise>` (vide si le séjour n'y a pas droit). Le calculateur les applique sans les connaître, puis plafonne le cumul à 25 % pour préserver la rentabilité.
-5. **Import des réservations via le service métier.** Les réservations du fichier ne sont pas insérées directement : elles passent par `ReservationService.reserver()`, donc par les mêmes contrôles qu'une saisie au clavier. Une ligne invalide ou en conflit est signalée dans le rapport de démarrage sans bloquer l'application.
+1. **`BigDecimal` for every amount.** A `double` cannot represent 0.10 exactly: discounts and rounding would produce wrong cents. Amounts are rounded to the cent in a single place (`Montants`), with the same rule everywhere.
+2. **Unchecked business exceptions, checked format exception.** A violated business rule (room already taken, capacity exceeded...) cannot be fixed by the direct caller: it propagates up to the menu or the import, which catch all of them through the parent class `HotelException`. Conversely, `FormatDonneesException` is checked: the compiler forces the loader to handle it, so it can skip the faulty line and continue.
+3. **Injected clock (`java.time.Clock`).** "Booking in the past", "cancelling less than 7 days before" or "booking 60 days in advance" all depend on today's date. Injecting the clock lets the tests run at a fixed date and stay reproducible.
+4. **Discounts as a Strategy pattern with a global cap.** Each discount is an independent class returning an `Optional<LigneRemise>` (empty if the stay is not eligible). The calculator applies them without knowing them, then caps the total at 25 % to preserve profitability.
+5. **Reservations imported through the business service.** Reservations from the file are not inserted directly: they go through `ReservationService.reserver()`, and therefore through the same checks as keyboard input. An invalid or conflicting line is reported in the startup report without blocking the application.
 
-## 6. Concepts orientés objet
+## 6. Object-oriented concepts
 
-### Héritage
+### Inheritance
 
-`Chambre` est la classe mère de `ChambreStandard`, `ChambreFamiliale` et `Suite`. Dans un hôtel, ce sont bien des chambres (relation « est un ») : elles partagent un numéro, un étage, une capacité, un prix de base et leurs validations, mais se distinguent par leur tarification et leur politique d'annulation.
+`Chambre` is the parent class of `ChambreStandard`, `ChambreFamiliale` and `Suite`. In a hotel, these are all rooms (an "is a" relationship): they share a number, a floor, a capacity, a base price and their validations, but differ in their pricing and their cancellation policy.
 
-### Polymorphisme
+### Polymorphism
 
-- `CalculateurTarif` appelle `chambre.prixNuit(nuit, nbPersonnes)` sans connaître le type réel : la suite applique sa majoration de week-end, la chambre familiale son supplément par personne.
-- `ReservationService.calculerFraisAnnulation()` appelle `chambre.delaiAnnulationGratuiteJours()` : 2, 3 ou 7 jours selon l'objet réel.
-- `CalculateurTarif` parcourt une `List<Remise>` et appelle `calculer()` sur chaque élément, qu'il s'agisse d'une remise long séjour, fidélité ou anticipée.
-- `ChargeurCsv.charger()` accepte n'importe quel `ParseurLigne<T>` et `SourceDonnees` (classpath, dossier, ou chaîne en mémoire dans les tests).
+- `CalculateurTarif` calls `chambre.prixNuit(nuit, nbPersonnes)` without knowing the actual type: the suite applies its weekend surcharge, the family room its per-person supplement.
+- `ReservationService.calculerFraisAnnulation()` calls `chambre.delaiAnnulationGratuiteJours()`: 2, 3 or 7 days depending on the actual object.
+- `CalculateurTarif` iterates over a `List<Remise>` and calls `calculer()` on each element, whether it is a long-stay, loyalty or early-booking discount.
+- `ChargeurCsv.charger()` accepts any `ParseurLigne<T>` and any `SourceDonnees` (classpath, folder, or in-memory string in the tests).
 
-### Classe abstraite et interfaces
+### Abstract class and interfaces
 
-- **`Chambre` est une classe abstraite** parce que les chambres partagent de l'état et du code (attributs, validation, `equals`, `toString`) en plus d'un contrat. Ses méthodes abstraites `prixNuit`, `delaiAnnulationGratuiteJours` et `getType` obligent chaque type à définir son comportement.
-- **`Remise` est une interface** parce que les remises n'ont rien en commun hormis le contrat `calculer` : aucun état partagé, et une nouvelle promotion peut être ajoutée sans hiérarchie.
-- Autres interfaces : `Repository<T, ID>` et `ReservationRepository` (stockage), `SourceDonnees` (origine des fichiers), `ParseurLigne<T>` (conversion d'une ligne), `Identifiable<ID>` (ce dont un dépôt a besoin).
+- **`Chambre` is an abstract class** because rooms share state and code (attributes, validation, `equals`, `toString`) on top of a contract. Its abstract methods `prixNuit`, `delaiAnnulationGratuiteJours` and `getType` force each room type to define its own behaviour.
+- **`Remise` is an interface** because discounts have nothing in common except the `calculer` contract: no shared state, and a new promotion can be added without any hierarchy.
+- Other interfaces: `Repository<T, ID>` and `ReservationRepository` (storage), `SourceDonnees` (origin of the files), `ParseurLigne<T>` (conversion of one line), `Identifiable<ID>` (what a repository needs).
 
-## 7. Exceptions personnalisées
+## 7. Custom exceptions
 
-| Exception | Levée quand |
+| Exception | Thrown when |
 |---|---|
-| `HotelException` (abstraite) | Classe mère de toutes les erreurs métier, interceptée par le menu et l'import |
-| `ChambreIndisponibleException` | La chambre est déjà réservée sur une partie de la période |
-| `CapaciteDepasseeException` | Le nombre de personnes dépasse la capacité de la chambre |
-| `ElementIntrouvableException` | Client, chambre ou réservation inexistant |
-| `ReservationInvalideException` | Réservation demandée pour une date passée |
-| `AnnulationImpossibleException` | Réservation déjà annulée ou séjour déjà commencé |
-| `FormatDonneesException` (vérifiée) | Ligne de fichier CSV mal formée |
+| `HotelException` (abstract) | Parent class of every business error, caught by the menu and the import |
+| `ChambreIndisponibleException` | The room is already booked for part of the period |
+| `CapaciteDepasseeException` | The number of guests exceeds the room's capacity |
+| `ElementIntrouvableException` | Unknown guest, room or reservation |
+| `ReservationInvalideException` | Reservation requested for a past date |
+| `AnnulationImpossibleException` | Reservation already cancelled or stay already started |
+| `FormatDonneesException` (checked) | Malformed line in a CSV file |
 
-Des exceptions standard sont aussi utilisées là où elles ont du sens : `IllegalArgumentException` pour un argument invalide (période incohérente, prix négatif...), `NullPointerException` via `Objects.requireNonNull`, `IOException` quand un fichier est absent, et `NumberFormatException` / `DateTimeParseException` interceptées et traduites en messages clairs.
+Standard exceptions are also used where they make sense: `IllegalArgumentException` for an invalid argument (inconsistent period, negative price...), `NullPointerException` via `Objects.requireNonNull`, `IOException` when a file is missing, and `NumberFormatException` / `DateTimeParseException`, which are caught and translated into clear messages.
 
-## 8. Chargement des données
+## 8. Data loading
 
-Au démarrage, `ImportateurDonnees` lit trois fichiers CSV (séparateur `;`, encodage UTF-8) dans cet ordre, car les réservations font référence aux chambres et aux clients :
+At startup, `ImportateurDonnees` reads three CSV files (`;` separator, UTF-8 encoding) in this order, because reservations refer to rooms and guests:
 
-| Fichier | Colonnes |
+| File | Columns |
 |---|---|
-| `chambres.csv` | `type;numero;etage;capacite;prix_base;option` (option = supplément par personne pour FAMILIALE, taux de majoration week-end pour SUITE) |
-| `clients.csv` | `id;nom;email;statut` (STANDARD, ARGENT ou OR) |
-| `reservations.csv` | `client;chambre;arrivee;depart;personnes` (dates au format AAAA-MM-JJ) |
+| `chambres.csv` (rooms) | `type;numero;etage;capacite;prix_base;option` (type, number, floor, capacity, base price; option = per-person supplement for FAMILIALE, weekend surcharge rate for SUITE) |
+| `clients.csv` (guests) | `id;nom;email;statut` (id, name, email, status: STANDARD, ARGENT or OR, i.e. standard, silver or gold) |
+| `reservations.csv` | `client;chambre;arrivee;depart;personnes` (guest, room, arrival, departure, number of guests; dates in YYYY-MM-DD format) |
 
-- La première ligne utile est l'en-tête ; les lignes vides et celles commençant par `#` sont ignorées.
-- Chaque ligne est convertie par un `ParseurLigne` dédié. Une ligne invalide est écartée avec son numéro et la raison, les autres sont chargées.
-- Les identifiants en double sont signalés au lieu d'écraser la première occurrence.
-- Les réservations passent par le service métier (voir décision 5). Le fichier fourni contient volontairement une réservation en conflit pour montrer ce mécanisme : elle apparaît dans le rapport affiché au démarrage.
-- Si un fichier est absent, l'application s'arrête avec un message explicite.
+- The first meaningful line is the header; empty lines and lines starting with `#` are ignored.
+- Each line is converted by a dedicated `ParseurLigne`. An invalid line is skipped and reported with its number and the reason; the other lines are loaded.
+- Duplicate identifiers are reported instead of overwriting the first occurrence.
+- Reservations go through the business service (see decision 5). The provided file deliberately contains a conflicting reservation to demonstrate this mechanism: it appears in the report displayed at startup.
+- If a file is missing, the application stops with an explicit message.
 
-## 9. Principes SOLID
+## 9. SOLID principles
 
-- **S - Responsabilité unique.** Chaque classe a une seule raison de changer : `CalculateurTarif` le calcul du prix, `DisponibiliteService` la disponibilité, `ChargeurCsv` la lecture de fichier, `MenuPrincipal` l'affichage, `Application` uniquement l'assemblage. Il n'y a pas de classe « fourre-tout ».
-- **O - Ouvert/fermé.** Ajouter une remise (par exemple « -15 % en semaine ») se fait en créant une classe qui implémente `Remise`, sans modifier le calculateur. De même, ajouter une option de menu se limite à une ligne dans `enregistrerOptions()`.
-- **L - Substitution de Liskov.** Toute sous-classe de `Chambre` peut remplacer `Chambre` : chacune respecte le contrat (prix au moins égal au prix de base, délai positif) et l'égalité est définie une fois pour toutes (`equals` final) sur le numéro.
-- **I - Ségrégation des interfaces.** `Repository` ne contient que les opérations communes ; les recherches par chambre ou par client sont dans `ReservationRepository`, que seuls les services concernés utilisent. `Remise`, `SourceDonnees` et `ParseurLigne` n'ont chacune qu'une méthode.
-- **D - Inversion des dépendances.** Les services reçoivent par constructeur des abstractions (`Repository`, `ReservationRepository`, `List<Remise>`, `Clock`, `SourceDonnees`) et ne créent jamais leurs dépendances. Seule `Application` choisit les implémentations concrètes, ce qui permet aux tests d'injecter une horloge fixe ou des données en mémoire.
+- **S - Single responsibility.** Each class has one reason to change: `CalculateurTarif` price calculation, `DisponibiliteService` availability, `ChargeurCsv` file reading, `MenuPrincipal` display, `Application` only the wiring. There is no "do-everything" class.
+- **O - Open/closed.** Adding a discount (for example "-15 % on weekdays") means creating a class that implements `Remise`, without modifying the calculator. Likewise, adding a menu option is a single line in `enregistrerOptions()`.
+- **L - Liskov substitution.** Any subclass of `Chambre` can replace `Chambre`: each one respects the contract (price at least equal to the base price, positive notice period), and equality is defined once and for all (`final equals`) on the room number.
+- **I - Interface segregation.** `Repository` only contains the common operations; searches by room or by guest live in `ReservationRepository`, which only the services that need them use. `Remise`, `SourceDonnees` and `ParseurLigne` each have a single method.
+- **D - Dependency inversion.** Services receive abstractions through their constructor (`Repository`, `ReservationRepository`, `List<Remise>`, `Clock`, `SourceDonnees`) and never create their own dependencies. Only `Application` chooses the concrete implementations, which lets the tests inject a fixed clock or in-memory data.
 
-## 10. Collections et fonctionnalités Java utilisées
+## 10. Collections and Java features used
 
-- **`List`** pour les résultats ordonnés, **`Map`** (`LinkedHashMap`) pour l'accès par identifiant dans les dépôts, **`EnumMap`** pour le chiffre d'affaires par type de chambre, **`EnumSet`/`Set`** pour les mois d'une saison et les nuits de week-end.
-- **Streams et lambdas** pour les recherches, totaux et regroupements (`groupingBy`, `reducing`, `flatMap(Optional::stream)`).
-- **`Optional`** pour les recherches qui peuvent échouer (`trouverParId`) et les remises qui peuvent ne pas s'appliquer.
-- **Enums avec comportement** (`Saison.de(date)`, `StatutFidelite` avec son taux).
-- **`LocalDate`**, `ChronoUnit`, `datesUntil` pour toute la logique de dates.
-- **Génériques** : `Repository<T extends Identifiable<ID>, ID>`, `ParseurLigne<T>`, `ResultatChargement<T>`, `LigneCsv.enumeration(..., Class<E>)`.
-- **Records** pour les objets valeur immuables (`Periode`, `Devis`, `DemandeReservation`...).
+- **`List`** for ordered results, **`Map`** (`LinkedHashMap`) for access by identifier in the repositories, **`EnumMap`** for revenue per room type, **`EnumSet`/`Set`** for the months of a season and the weekend nights.
+- **Streams and lambdas** for searches, totals and groupings (`groupingBy`, `reducing`, `flatMap(Optional::stream)`).
+- **`Optional`** for lookups that may fail (`trouverParId`) and discounts that may not apply.
+- **Enums with behaviour** (`Saison.de(date)`, `StatutFidelite` with its rate).
+- **`LocalDate`**, `ChronoUnit`, `datesUntil` for all date logic.
+- **Generics**: `Repository<T extends Identifiable<ID>, ID>`, `ParseurLigne<T>`, `ResultatChargement<T>`, `LigneCsv.enumeration(..., Class<E>)`.
+- **Records** for immutable value objects (`Periode`, `Devis`, `DemandeReservation`...).
 
 ## 11. Tests
 
-Les 93 tests JUnit 5 couvrent la logique métier, pas les getters :
+The 93 JUnit 5 tests cover the business logic, not the getters:
 
-| Classe de test | Ce qui est vérifié |
+| Test class | What is verified |
 |---|---|
-| `PeriodeTest` | Calcul des nuits, chevauchements (y compris départ = arrivée), intersection, périodes invalides |
-| `ChambreTest` | Tarif de chaque type (supplément, majoration week-end), capacité, délais polymorphes, validations |
-| `ReservationTest` | Annulation, montant encaissé, double annulation, frais incohérents |
-| `CalculateurTarifTest` | Saisons, séjour à cheval sur deux saisons, chaque remise à sa limite exacte, plafonnement, arrondi |
-| `ReservationServiceTest` | Réservation normale, conflit, capacité, éléments inconnus, date passée, annulation gratuite / tardive / impossible |
-| `DisponibiliteServiceTest` | Filtrage par capacité et par dates, tri par prix, réservations annulées |
-| `StatistiquesServiceTest` | Taux d'occupation sur période partielle, chiffre d'affaires avec frais d'annulation, classement |
-| `ChambreCsvParserTest`, `ChargeurCsvTest`, `ImportateurDonneesTest` | Parsing, lignes invalides signalées avec leur numéro, doublons, conflits à l'import, fichier absent, validité des données fournies |
+| `PeriodeTest` | Night count, overlaps (including departure = arrival), intersection, invalid periods |
+| `ChambreTest` | Price of each room type (supplement, weekend surcharge), capacity, polymorphic notice periods, validations |
+| `ReservationTest` | Cancellation, amount collected, double cancellation, inconsistent fees |
+| `CalculateurTarifTest` | Seasons, stay spanning two seasons, each discount at its exact threshold, capping, rounding |
+| `ReservationServiceTest` | Normal booking, conflict, capacity, unknown items, past date, free / late / impossible cancellation |
+| `DisponibiliteServiceTest` | Filtering by capacity and dates, sorting by price, cancelled reservations |
+| `StatistiquesServiceTest` | Occupancy rate over a partial period, revenue including cancellation fees, ranking |
+| `ChambreCsvParserTest`, `ChargeurCsvTest`, `ImportateurDonneesTest` | Parsing, invalid lines reported with their number, duplicates, conflicts at import, missing file, validity of the provided data |
 
-Chaque fonctionnalité est testée dans les trois situations : cas normal, cas limite (exactement 7 nuits, exactement 60 jours, arrivée le jour du départ précédent...) et cas invalide (exception attendue).
+Each feature is tested in all three situations: normal case, edge case (exactly 7 nights, exactly 60 days, arrival on the previous guest's departure day...) and invalid case (expected exception).
 
-**Lancer les tests**
+**Running the tests**
 
-- IntelliJ : clic droit sur `src/test/java` puis `Run 'All Tests'`.
-- Ligne de commande :
+- IntelliJ: right-click `src/test/java`, then `Run 'All Tests'`.
+- Command line:
 
 ```bash
 mvn test
